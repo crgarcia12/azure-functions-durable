@@ -18,16 +18,16 @@ namespace DemoFunction.ServiceBusDurableFunction
             var outputs = new List<string>();
 
             // Replace "hello" with the name of your Durable Activity Function.
-            outputs.Add(await context.CallActivityAsync<string>("Function1_Hello", "Tokyo"));
-            outputs.Add(await context.CallActivityAsync<string>("Function1_Hello", "Seattle"));
-            outputs.Add(await context.CallActivityAsync<string>("Function1_Hello", "London"));
+            outputs.Add(await context.CallActivityAsync<string>(nameof(ActivityFunction), "Tokyo"));
+            outputs.Add(await context.CallActivityAsync<string>(nameof(ActivityFunction), "Seattle"));
+            outputs.Add(await context.CallActivityAsync<string>(nameof(ActivityFunction), "London"));
 
             // returns ["Hello Tokyo!", "Hello Seattle!", "Hello London!"]
             return outputs;
         }
 
-        [FunctionName("Function1_Hello")]
-        public static string SayHello([ActivityTrigger] string name, ILogger log)
+        [FunctionName(nameof(ActivityFunction))]
+        public static string ActivityFunction([ActivityTrigger] string name, ILogger log)
         {
             log.LogInformation($"Saying hello to {name}.");
             return $"Hello {name}!";
