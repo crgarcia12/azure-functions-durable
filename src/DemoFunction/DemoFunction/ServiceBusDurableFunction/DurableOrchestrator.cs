@@ -12,25 +12,17 @@ namespace DemoFunction.ServiceBusDurableFunction
     public static class DurableOrchestrator
     {
         [FunctionName(nameof(DurableOrchestrator))]
-        public static async Task<List<string>> RunOrchestrator(
+        public static async Task<bool> RunOrchestrator(
             [OrchestrationTrigger] IDurableOrchestrationContext context)
         {
-            var outputs = new List<string>();
-
-            // Replace "hello" with the name of your Durable Activity Function.
-            outputs.Add(await context.CallActivityAsync<string>(nameof(ActivityFunction), "Tokyo"));
-            outputs.Add(await context.CallActivityAsync<string>(nameof(ActivityFunction), "Seattle"));
-            outputs.Add(await context.CallActivityAsync<string>(nameof(ActivityFunction), "London"));
-
-            // returns ["Hello Tokyo!", "Hello Seattle!", "Hello London!"]
-            return outputs;
+            bool input = context.GetInput<bool>();
+            return await context.CallActivityAsync<bool>(nameof(ActivityFunction), input);
         }
 
         [FunctionName(nameof(ActivityFunction))]
-        public static string ActivityFunction([ActivityTrigger] string name, ILogger log)
+        public static async Task<bool> ActivityFunction([ActivityTrigger] bool input, ILogger log)
         {
-            log.LogInformation($"Saying hello to {name}.");
-            return $"Hello {name}!";
+            return await Task.FromResult<bool>(input);
         }
     }
 }

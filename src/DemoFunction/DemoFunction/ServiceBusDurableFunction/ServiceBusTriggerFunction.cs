@@ -25,10 +25,10 @@ namespace DemoFunction.ServiceBusDurableFunction
                 string lockToken,
                 [DurableClient] IDurableOrchestrationClient starter, ILogger log)
         {
-            string inputMessage = Encoding.UTF8.GetString(message.Body);
-            log.LogInformation($"message - " + inputMessage);
+            bool inputMessage = bool.Parse(Encoding.UTF8.GetString(message.Body));
+            log.LogInformation($"message : " + inputMessage.ToString());
 
-            string instanceId = await starter.StartNewAsync(nameof(DurableOrchestrator));
+            string instanceId = await starter.StartNewAsync<bool>(nameof(DurableOrchestrator), string.Empty, inputMessage);
             log.LogInformation($"Orchestration Started with ID: {instanceId}");
 
             var orchestrationStatus = await starter.GetStatusAsync(instanceId);
@@ -42,8 +42,14 @@ namespace DemoFunction.ServiceBusDurableFunction
                 status = orchestrationStatus.RuntimeStatus.ToString().ToUpper();
             }
 
-            log.LogInformation($"{nameof(DurableOrchestrator)} Function completed [Instance ID:{instanceId}]: {orchestrationStatus.Output}");
+            bool orchestratorResult = (bool)orchestrationStatus.Output;
+            log.LogInformation($"{nameof(DurableOrchestrator)} Function completed [Instance ID:{instanceId}]: {orchestratorResult}");
+            if(!orchestratorResult)
+            {
+                throw new Exception("Do not complete the message, something went wrong");
+            }
 
+            //Message is completed after return.
         }
     }
 }
